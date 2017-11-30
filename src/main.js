@@ -5,6 +5,7 @@ let exec = require('child_process').exec;
 const myBot = ['u6de2fd0d3f168038814531c1fb8fb7dc'];
 
 
+
 function isAdminOrBot(param) {
     return myBot.includes(param);
 }
