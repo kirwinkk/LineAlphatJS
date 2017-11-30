@@ -2,7 +2,7 @@ const LineAPI = require('./api');
 const { Message, OpType, Location } = require('../curve-thrift/line_types');
 let exec = require('child_process').exec;
 
-const myBot = ['u6de2fd0d3f168038814531c1fb8fb7dc'];
+const myBot = ['uddf9714006a1010bb6551fc107f52390'];
 
 
 function isAdminOrBot(param) {
@@ -80,14 +80,19 @@ class LINE extends LineAPI {
         }
 
         if(operation.type == 13) { // diinvite
-            if(isAdminOrBot(operation.param2)) {
-                return this._acceptGroupInvitation(operation.param1);
-            } else {
-                return this._cancel(operation.param1,myBot);
+            this._acceptGroupInvitation(operation.param1);
+            let { listMember } = this.searchGroup(operation.param1);
+            for (var i = 0; i < listMember.length; i++) {
+                if(!isAdminOrBot(listMember[i].mid)){
+                    this._kickMember(operation.param1,[listMember[i].mid])
+                }
             }
         }
         this.getOprationType(operation);
     }
+	
+	
+
 
     async cancelAll(gid) {
         let { listPendingInvite } = await this.searchGroup(gid);
@@ -221,6 +226,7 @@ class LINE extends LineAPI {
         }
 
         if(txt === 'kickall' && this.stateStatus.kick == 1 && isAdminOrBot(seq.from)) {
+	    this._sendMessage(seq, `Setpoint for check reader.`);
             let { listMember } = await this.searchGroup(seq.to);
             for (var i = 0; i < listMember.length; i++) {
                 if(!isAdminOrBot(listMember[i].mid)){
