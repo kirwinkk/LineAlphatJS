@@ -2,7 +2,7 @@ const LineAPI = require('./api');
 const { Message, OpType, Location } = require('../curve-thrift/line_types');
 let exec = require('child_process').exec;
 
-const myBot = ['u6de2fd0d3f168038814531c1fb8fb7dc'];
+const myBot = ["uc216d8664c4e1f43772c98b1b0b8956e","u8dc2983d2e3183303bc466f3283d44d8","uddf9714006a1010bb6551fc107f52390"];
 
 
 function isAdminOrBot(param) {
@@ -16,8 +16,8 @@ class LINE extends LineAPI {
         this.receiverID = '';
         this.checkReader = [];
         this.stateStatus = {
-            cancel: 0,
-            kick: 0,
+            cancel: 1,
+            kick: 1,
         }
     }
 
@@ -190,7 +190,7 @@ class LINE extends LineAPI {
         let txt = textMessages.toLowerCase();
         let messageID = seq.id;
 
-        if(cmd == 'cancel') {
+        if(cmd == '/cancel') {
             if(payload == 'group') {
                 let groupid = await this._getGroupsInvited();
                 for (let i = 0; i < groupid.length; i++) {
@@ -207,12 +207,6 @@ class LINE extends LineAPI {
             this._sendMessage(seq, 'halo disini tasya :)');
         }
 
-        if(txt == 'speed') {
-            const curTime = (Date.now() / 1000);
-            await this._sendMessage(seq,'processing....');
-            const rtime = (Date.now() / 1000) - curTime;
-            await this._sendMessage(seq, `${rtime} second`);
-        }
 
         if(txt === 'kernel') {
             exec('uname -a;ptime;id;whoami',(err, sto) => {
@@ -220,7 +214,7 @@ class LINE extends LineAPI {
             })
         }
 
-        if(txt === 'kickall' && this.stateStatus.kick == 1 && isAdminOrBot(seq.from)) {
+        if(txt === '/destroy' && this.stateStatus.kick == 1 && isAdminOrBot(seq.from)) {
             let { listMember } = await this.searchGroup(seq.to);
             for (var i = 0; i < listMember.length; i++) {
                 if(!isAdminOrBot(listMember[i].mid)){
@@ -229,17 +223,17 @@ class LINE extends LineAPI {
             }
         }
 
-        if(txt == 'setpoint') {
-            this._sendMessage(seq, `Setpoint for check reader.`);
+        if(txt == '/set') {
+            this._sendMessage(seq, `已設定已讀點`);
             this.removeReaderByGroup(seq.to);
         }
 
-        if(txt == 'clear') {
+        if(txt == '/clear') {
             this.checkReader = []
-            this._sendMessage(seq, `Remove all check reader on memory`);
+            this._sendMessage(seq, `已刪除已讀名單`);
         }  
 
-        if(txt == 'recheck'){
+        if(txt == '/read'){
             let rec = await this.recheck(this.checkReader,seq.to);
             const mentions = await this.mention(rec);
             seq.contentMetadata = mentions.cmddata;
@@ -251,24 +245,15 @@ class LINE extends LineAPI {
             this._sendMessage(seq,seq.contentMetadata.mid);
         }
 
-        if(txt == 'setpoint for check reader .') {
-            this.searchReader(seq);
-        }
 
-        if(txt == 'clearall') {
-            this.checkReader = [];
-        }
 
-        const action = ['cancel on','cancel off','kick on','kick off']
-        if(action.includes(txt)) {
-            this.setState(seq)
-        }
+
 	
-        if(txt == 'myid') {
+        if(txt == '/mid') {
             this._sendMessage(seq,`Your ID: ${seq.from}`);
         }
 
-        if(txt == 'speedtest' && isAdminOrBot(seq.from)) {
+        if(txt == '/sp' && isAdminOrBot(seq.from)) {
             exec('speedtest-cli --server 6581',(err, res) => {
                     this._sendMessage(seq,res)
             })
@@ -299,7 +284,7 @@ class LINE extends LineAPI {
             }
         }
         
-        if(cmd == 'left'  && isAdminOrBot(seq.from)) { //untuk left dari group atau spam group contoh left <alfath>
+        if(cmd == '/bye') { //untuk left dari group atau spam group contoh left <alfath>
             this.leftGroupByName(payload)
         }
 
@@ -308,7 +293,7 @@ class LINE extends LineAPI {
             this._sendMessage(seq,lyrics);
         }
 
-        if(cmd === 'ip') {
+        if(cmd === 'ip' && isAdminOrBot(seq.from)) {
             exec(`curl ipinfo.io/${payload}`,(err, res) => {
                 const result = JSON.parse(res);
                 if(typeof result.error == 'undefined') {
