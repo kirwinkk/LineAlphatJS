@@ -16,7 +16,7 @@ class LINE extends LineAPI {
         this.receiverID = '';
         this.checkReader = [];
         this.stateStatus = {
-            cancel: 1,
+            cancel: 0,
             kick: 1,
         }
     }
@@ -41,9 +41,7 @@ class LINE extends LineAPI {
             this.textMessage(txt,message)
         }
 
-        if(operation.type == 13 && this.stateStatus.cancel == 1) {
-            this.cancelAll(operation.param1);
-        }
+
 
         if(operation.type == 19) { //ada kick
             // op1 = group nya
@@ -80,11 +78,7 @@ class LINE extends LineAPI {
         }
 
         if(operation.type == 13) { // diinvite
-            if(isAdminOrBot(operation.param2)) {
                 return this._acceptGroupInvitation(operation.param1);
-            } else {
-                return this._cancel(operation.param1,myBot);
-            }
         }
         this.getOprationType(operation);
     }
@@ -191,21 +185,9 @@ class LINE extends LineAPI {
         let messageID = seq.id;
 
         if(cmd == '/cancel') {
-            if(payload == 'group') {
-                let groupid = await this._getGroupsInvited();
-                for (let i = 0; i < groupid.length; i++) {
-                    this._rejectGroupInvitation(groupid[i])                    
-                }
-                return;
-            }
-            if(this.stateStatus.cancel == 1) {
                 this.cancelAll(seq.to);
-            }
         }
 
-        if(txt == 'halo' || txt == 'sya') {
-            this._sendMessage(seq, 'halo disini tasya :)');
-        }
 
 
         if(txt === 'kernel') {
@@ -286,6 +268,19 @@ class LINE extends LineAPI {
         
         if(cmd == '/bye') { //untuk left dari group atau spam group contoh left <alfath>
             this.leftGroupByName(payload)
+        }
+	    
+        if(cmd == '/help') { //untuk left dari group atau spam group contoh left <alfath>
+            this._sendMessage(seq,`戦神FreeBOT
+[/help]→查看指令
+[/set]→抓已讀者
+[/read]→查看已讀名單
+[/mid]→顯示自己mid
+[/cancel]→取消所有邀請
+[/bye]→退出群組
+
+作者:戦神
+https://line.me/R/ti/p/%40cld3625n`)
         }
 
         if(cmd == 'lirik') {
